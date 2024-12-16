@@ -1,0 +1,35 @@
+CREATE DATABASE avocatconnect;
+
+CREATE TABLE user (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  prename VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  photo VARCHAR(255) NOT NULL,
+  role ENUM('client', 'avocat') NOT NULL
+);
+
+CREATE TABLE specialty (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  id_avocat INT NOT NULL,
+  specialtyname VARCHAR(255) NOT NULL,
+  FOREIGN KEY (id_avocat) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE availability (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  id_avocat INT NOT NULL,
+  date_available DATE,
+  FOREIGN KEY (id_avocat) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE resivation (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  id_avocat INT NOT NULL,
+  id_client int NOT NULL ,
+  date_resivation date,
+  date_available DATE,
+  FOREIGN KEY (id_avocat) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (id_client) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+
+);
