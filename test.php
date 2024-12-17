@@ -105,12 +105,12 @@ if (isset($_POST['submit'])) {
                                         <div class="hidden" id="specialty">
                                             <select class="form-select" aria-label="Specialty" name="specialty">
                                                 <option selected>Choose Your Specialty:</option>
-                                                <option value="1">Droit des affaires</option>
-                                                <option value="2">Droit immobilier</option>
-                                                <option value="3">Droit du travail</option>
-                                                <option value="4">Droit de la famille</option>
-                                                <option value="5">Droit administratif</option>
-                                                <option value="6">Droit international</option>
+                                                <option value="Droit des affaires">Droit des affaires</option>
+                                                <option value="Droit immobilier">Droit immobilier</option>
+                                                <option value="Droit du travail">Droit du travail</option>
+                                                <option value="Droit de la famille">Droit de la famille</option>
+                                                <option value="Droit administratif">Droit administratif</option>
+                                                <option value="Droit international">Droit international</option>
                                             </select>
                                         </div>
                                         <br>
