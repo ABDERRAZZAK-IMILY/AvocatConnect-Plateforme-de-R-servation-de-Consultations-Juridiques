@@ -1,47 +1,34 @@
-
 <?php
-
 include 'db_connect.php';
 
+if (isset($_POST['submit'])) {
+    $nome = $_POST['nome'];
+    $prenom = $_POST['prenome'];
+    $email = $_POST['email'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $specialty = $_POST['specialty'];
+    $role = $_POST['role'];
 
-if(isset($_POST['submit'])){
- $nome = $_POST['nome'];
- $prenom = $_POST['prenome'];
- $email =$_POST['email'];
- $passsword =md5($_POST['password']);
- $Specialty =$_POST['Specialty'];
- $role = $_POST['role'];
+    $stmt = $conn->prepare("INSERT INTO user (name, prename, password, email, role) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $nome, $prenom, $password, $email, $role);
 
-
- $stmt = $conn->prepare("INSERT INTO user (nom, prenom, password , email , role) VALUES (?, ?, ? , ? ,?)");
- $stmt->bind_param("ssss", $nome, $prenome, $passsword, $email , $role);
-
- if ($stmt->execute()) { 
-    echo "User added successfully!";
-    if ($role == '2') {
-        $stmt2 = $conn->prepare("INSERT INTO specialty (specialtyname) VALUES (?)");
-        $stmt2->bind_param("s", $specialty);
-        if ($stmt2->execute()) {
-            echo " specialty added successfully!";
-        } else {
-            echo "error adding specialty: " . $stmt2->error;
+    if ($stmt->execute()) {
+        echo "User added successfully!";
+        if ($role == '2') { 
+            $stmt2 = $conn->prepare("INSERT INTO specialty (id_avocat, specialtyname) VALUES ((SELECT id FROM user WHERE email = ?), ?)");
+            $stmt2->bind_param("ss", $email, $specialty);
+            if ($stmt2->execute()) {
+                echo "Specialty added successfully!";
+            } else {
+                echo "Error adding specialty: " . $stmt2->error;
+            }
         }
+    } else {
+        echo "Error: " . $stmt->error;
     }
 
-} else { 
-    echo "Error: " . $stmt->error; 
+    $stmt->close();
 }
-$stmt->close();
-
-
-}
-
-
-
-
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -51,15 +38,11 @@ $stmt->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <title>INSCPTSION</title>
-
+    <title>INSCRIPTION</title>
     <style>
         .gradient-custom-2 {
-            background: #fccb90;
-            background: -webkit-linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
             background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
         }
-        
         @media (min-width: 768px) {
             .gradient-form {
                 height: 100vh !important;
@@ -71,10 +54,13 @@ $stmt->close();
                 border-bottom-right-radius: .3rem;
             }
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <section class="h-100 gradient-form" style="background-color: #eee;">
+    <section class="h-100 gradient-form">
         <div class="container py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
                 <div class="col-xl-10">
@@ -82,33 +68,32 @@ $stmt->close();
                         <div class="row g-0">
                             <div class="col-lg-6">
                                 <div class="card-body p-md-5 mx-md-4">
-
                                     <div class="text-center">
                                         <h4 class="mt-1 mb-5 pb-1">AVOCAT CONNECT</h4>
                                     </div>
 
-                                    <form method="POST" action="/login.php">
+                                    <form method="POST" action="">
                                         <p>Create your account</p>
 
                                         <select class="form-select" aria-label="Default select example" id="rolesection" name="role">
-                                            <option selected>singn up like :</option>
+                                            <option selected>Sign up as:</option>
                                             <option value="1">CLIENT</option>
                                             <option value="2">AVOCAT</option>
                                         </select>
                                         <br>
 
                                         <div class="form-outline mb-4">
-                                            <label class="form-label" for="firstName">ENTER the NAME</label>
+                                            <label class="form-label" for="firstName">Enter the Name</label>
                                             <input type="text" id="firstName" class="form-control" name="nome" placeholder="First Name" required />
                                         </div>
 
                                         <div class="form-outline mb-4">
-                                            <label class="form-label" for="lastName">ENTER the LAST NAME</label>
+                                            <label class="form-label" for="lastName">Enter the Last Name</label>
                                             <input type="text" id="lastName" class="form-control" name="prenome" placeholder="Last Name" required />
                                         </div>
 
                                         <div class="form-outline mb-4">
-                                            <label class="form-label" for="email">ENTER the EMAIL</label>
+                                            <label class="form-label" for="email">Enter the Email</label>
                                             <input type="email" id="email" class="form-control" name="email" placeholder="Email" required />
                                         </div>
 
@@ -119,21 +104,21 @@ $stmt->close();
 
                                         <div class="hidden" id="specialty">
                                             <select class="form-select" aria-label="Specialty" name="specialty">
-                                                <option selected>CHOOSE YOUR SPECIALTY:</option>
-                                                <option value="1">Droit des affaires</option>
-                                                <option value="2">Droit immobilier</option>
-                                                <option value="3">Droit du travail</option>
-                                                <option value="4">Droit de la famille</option>
-                                                <option value="5">Droit administratif</option>
-                                                <option value="6">Droit international</option>
+                                                <option selected>Choose Your Specialty:</option>
+                                                <option value="Droit des affaires">Droit des affaires</option>
+                                                <option value="Droit immobilier">Droit immobilier</option>
+                                                <option value="Droit du travail">Droit du travail</option>
+                                                <option value="Droit de la famille">Droit de la famille</option>
+                                                <option value="Droit administratif">Droit administratif</option>
+                                                <option value="Droit international">Droit international</option>
                                             </select>
                                         </div>
                                         <br>
-                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        <button type="submit" name="submit" class="btn btn-primary">Submit</button>
 
                                         <div class="d-flex align-items-center justify-content-center pb-4">
                                             <p class="mb-0 me-2">Already have an account?</p>
-                                            <a href="http://localhost/AvocatConnect%20%20Plateforme%20de%20R%C3%A9servation%20de%20Consultations%20Juridiques/AvocatConnect-Plateforme-de-R-servation-de-Consultations-Juridiques/login.php" class="btn btn-outline-danger">Login</a>
+                                            <a href="http://localhost/AvocatConnect%20%20Plateforme%20de%20R%C3%A9servation%20de%20Consultations%20Juridiques/AvocatConnect-Plateforme-de-R-servation-de-Consultations-Juridiques/views//login.php" class="btn btn-outline-danger">Login</a>
                                         </div>
 
                                     </form>
@@ -143,9 +128,7 @@ $stmt->close();
                             <div class="col-lg-6 d-flex align-items-center gradient-custom-2">
                                 <div class="text-white px-3 py-4 p-md-5 mx-md-4">
                                     <h4 class="mb-4">We are more than just a company</h4>
-                                    <p class="small mb-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                                        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                                        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                                    <p class="small mb-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
                                 </div>
                             </div>
                         </div>
