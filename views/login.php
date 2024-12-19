@@ -1,68 +1,32 @@
-
 <?php
-
 include 'db_connect.php';
 
+session_start();
 
-function isAuth($role){
-    if(isset($_COOKIE['id']) && isset($_COOKIE['role'])){
-        return $_COOKIE['role'] == $role;
-    }else if($role == 'guest'){
-        return true;
-    }
+if (isset($_POST["submit_btn"])) {
+    $email = $_POST["email"];
+    $password = $_POST["password"];
 
-    return false;
-}
+    $sqlQ = "SELECT * FROM user WHERE email='$email'";
+    $result = mysqli_query($conn, $sqlQ);
 
+    if (mysqli_num_rows($result) > 0) {
+        $user = mysqli_fetch_assoc($result);
+        if (password_verify($password, $user["password"])) {
 
-if(!isAuth('guest')){
-  header('Location: "../views/'.$_COOKIE['role'].'.php"');
-}
-
-$emailError = '';
-$passwordError = '';
-
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    if(isset($_POST['email'])){
-        $emailError = '';
-    }else{
-        $emailError = 'Email is required !';
-        header('Location: "../views/'.htmlspecialchars($_COOKIE['role']).'.php"');
-
-    }
-
-    if(isset($_POST['password'])){
-        $passwordError = '';
-    }else{
-        $passwordError = 'Password is required !';
-            header('Location: "../views/'.htmlspecialchars($_COOKIE['role']).'.php"');
-    }
-
-    if(isset($_POST['email']) && isset($_POST['password'])){
-        $stmt = $conn->prepare("SELECT id, role, password FROM user WHERE email = ? LIMIT 1");
-        $stmt->bind_param('s', $_POST['email']);
-        $stmt->execute();
-        $stmt->bind_result($id, $role, $password);
-
-        if($stmt->fetch()){
-            $emailError = '';
-            if(md5($_POST['password']) == $password){
-                $passwordError = '';
-                //correct 
-                setcookie('id', $id, time() + 24 * 60 * 60, '/');
-                setcookie('role', $role, time() + 24 * 60 * 60, '/');
-                //reload page
-                header('Location: '.$_SERVER['PHP_SELF']);
-            }else{
-                $passwordError = 'Wrong password';
-            }
-        }else{
-            $emailError = 'There\'s nouser with this email !';
+            $_SESSION["user_id"] = $user["id"];
+            $_SESSION["first_name"] = $user["name"];
+            $_SESSION["email"] = $user["email"];
+            $_SESSION["role"] = $user["role"];
+            header("Location: ../avocat.php");
+            exit();
+        } else {
+            $error = "Invalid email or password!";
         }
+    } else {
+        $error = "Invalid email or password!";
     }
-}
-
-
+ }
 
 ?>
 
@@ -116,22 +80,21 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                   <h4 class="mt-1 mb-5 pb-1">AVOCATE CONNECT</h4>
                 </div>
 
-                <form method="POST" action="<?php echo $_SERVER['PHP_SELF'] ?>">
+                <form method="POST" action="">
                   <p>Please login to your account</p>
 
                   <div data-mdb-input-init class="form-outline mb-4">
                   <label class="form-label" for="form2Example11">EMAIL</label>
-                    <input type="email" id="form2Example11" class="form-control" value="<?php echo isset($_POST['email']) ? $_POST['email'] : '' ?>"
-                      placeholder="EMAIL" />
-                      <span class="text-red-500 text-xs"><?php echo $emailError ?></span>
+                    <input type="email" id="form2Example11" class="form-control" name="email">
+                      <span class="text-red-500 text-xs"></span>
                   </div>
 
                   <div data-mdb-input-init class="form-outline mb-4">
                   <label class="form-label" for="form2Example22">Password</label>
-                    <input type="password" id="form2Example22" class="form-control" />
-                    <span class="text-red-500 text-xs"><?php echo $passwordError ?></span>
+                    <input type="password" id="form2Example22" class="form-control" name="password" />
+                    <span class="text-red-500 text-xs"></span>
                   </div>
-                  <button type="submit" class="btn btn-primary">Submit</button>
+                  <button type="submit" class="btn btn-primary" name="submit_btn">Submit</button>
 
 
                   <div class="d-flex align-items-center justify-content-center pb-4">
@@ -160,7 +123,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
 
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </body>
 </html>

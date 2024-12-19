@@ -6,28 +6,51 @@ if (isset($_POST['submit'])) {
     $prenom = $_POST['prenome'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    //   $password = md5($_POST['password']);
+
+    // $password = $_POST['password'];
     $specialty = $_POST['specialty'];
     $role = $_POST['role'];
 
-    $stmt = $conn->prepare("INSERT INTO user (name, prename, password, email, role) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $nome, $prenom, $password, $email, $role);
+    $file = $_FILES['file']['name'];
+    $temp_file = $_FILES['file']['tmp_name'];
 
-    if ($stmt->execute()) {
-        echo "User added successfully!";
-        if ($role == '2') { 
-            $stmt2 = $conn->prepare("INSERT INTO specialty (id_avocat, specialtyname) VALUES ((SELECT id FROM user WHERE email = ?), ?)");
-            $stmt2->bind_param("ss", $email, $specialty);
-            if ($stmt2->execute()) {
-                echo "Specialty added successfully!";
-            } else {
-                echo "Error adding specialty: " . $stmt2->error;
+    $newfilename = uniqid() . "-" . $file;
+
+
+
+
+    if ($role == 'client'){
+        $stmt3 = $conn->prepare("INSERT INTO user (name, prename, password, email, role) VALUES (?, ?, ?, ?, ?)");
+        $stmt3->bind_param("sssss", $nome, $prenom, $password, $email, $role);
+        $stmt3->execute();
+    
+    }else if (move_uploaded_file($temp_file, "../assest/upload/" . $newfilename)) {
+        $stmt = $conn->prepare("INSERT INTO user (name, prename, password, email, role, photo) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $nome, $prenom, $password, $email, $role, $newfilename);
+
+
+
+
+        if ($stmt->execute()) {
+            echo "User  added successfully!";
+            if ($role == 'avocat') {
+                $stmt2 = $conn->prepare("INSERT INTO specialty (id_avocat, specialtyname) VALUES ((SELECT id FROM user WHERE email = ?), ?)");
+                $stmt2->bind_param("ss", $email, $specialty);
+                if ($stmt2->execute()) {
+                    echo "specialty added successfully!";
+                } else {
+                    echo "error adding specialty: " . $stmt2->error;
+                }
             }
+        } else {
+            echo "error: " . $stmt->error;
         }
-    } else {
-        echo "Error: " . $stmt->error;
-    }
 
-    $stmt->close();
+        $stmt->close();
+    } else{
+        echo "error uploading file.";
+    }
 }
 ?>
 
@@ -72,7 +95,7 @@ if (isset($_POST['submit'])) {
                                         <h4 class="mt-1 mb-5 pb-1">AVOCAT CONNECT</h4>
                                     </div>
 
-                                    <form method="POST" action="">
+                                    <form method="POST" action="" enctype="multipart/form-data">
                                         <p>Create your account</p>
 
                                         <select class="form-select" aria-label="Default select example" id="rolesection" name="role">
@@ -112,6 +135,10 @@ if (isset($_POST['submit'])) {
                                                 <option value="Droit administratif">Droit administratif</option>
                                                 <option value="Droit international">Droit international</option>
                                             </select>
+                                            <section>
+                                                <span>UPLOAD YOUR IMAGE</span>
+                                               <input type="file" name="file" require>
+                                            </section>
                                         </div>
                                         <br>
                                         <button type="submit" name="submit" class="btn btn-primary">Submit</button>
