@@ -1,57 +1,6 @@
 <?php
 include 'db_connect.php';
 
-if (isset($_POST['submit'])) {
-    $nome = $_POST['nome'];
-    $prenom = $_POST['prenome'];
-    $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    //   $password = md5($_POST['password']);
-
-    // $password = $_POST['password'];
-    $specialty = $_POST['specialty'];
-    $role = $_POST['role'];
-
-    $file = $_FILES['file']['name'];
-    $temp_file = $_FILES['file']['tmp_name'];
-
-    $newfilename = uniqid() . "-" . $file;
-
-
-
-
-    if ($role == 'client'){
-        $stmt3 = $conn->prepare("INSERT INTO user (name, prename, password, email, role) VALUES (?, ?, ?, ?, ?)");
-        $stmt3->bind_param("sssss", $nome, $prenom, $password, $email, $role);
-        $stmt3->execute();
-    
-    }else if (move_uploaded_file($temp_file, "../assest/upload/" . $newfilename)) {
-        $stmt = $conn->prepare("INSERT INTO user (name, prename, password, email, role, photo) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $nome, $prenom, $password, $email, $role, $newfilename);
-
-
-
-
-        if ($stmt->execute()) {
-            echo "User  added successfully!";
-            if ($role == 'avocat') {
-                $stmt2 = $conn->prepare("INSERT INTO specialty (id_avocat, specialtyname) VALUES ((SELECT id FROM user WHERE email = ?), ?)");
-                $stmt2->bind_param("ss", $email, $specialty);
-                if ($stmt2->execute()) {
-                    echo "specialty added successfully!";
-                } else {
-                    echo "error adding specialty: " . $stmt2->error;
-                }
-            }
-        } else {
-            echo "error: " . $stmt->error;
-        }
-
-        $stmt->close();
-    } else{
-        echo "error uploading file.";
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -98,10 +47,10 @@ if (isset($_POST['submit'])) {
                                     <form method="POST" action="" enctype="multipart/form-data">
                                         <p>Create your account</p>
 
-                                        <select class="form-select" aria-label="Default select example" id="rolesection" name="role">
+                                        <select class="form-select" aria-label="Default select example" id="lerole" name="role">
                                             <option selected>Sign up as:</option>
-                                            <option value="1">CLIENT</option>
-                                            <option value="2">AVOCAT</option>
+                                            <option value="client">CLIENT</option>
+                                            <option value="avocat">AVOCAT</option>
                                         </select>
                                         <br>
 
@@ -166,17 +115,91 @@ if (isset($_POST['submit'])) {
     </section>
 
     <script>
-        document.getElementById('rolesection').addEventListener('change', function () {
+        document.getElementById('lerole').addEventListener('change', function () {
             const roleSelection = this.value;
             const specialty = document.getElementById('specialty');
 
-            if (roleSelection == '2') {
+            if (roleSelection == 'avocat') {
                 specialty.classList.remove('hidden');
             } else {
                 specialty.classList.add('hidden');
             }
         });
     </script>
+
+    
+<script>
+    let role = document.getElementById('lerole').value;
+    if (role === "client"){
+
+        <?php
+if (isset($_POST['submit'])){
+    $nome = $_POST['nome'];
+    $prenom = $_POST['prenome'];
+    $email = $_POST['email'];
+    // $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    //   $password = md5($_POST['password']);
+
+    $password = $_POST['password'];
+    $role = $_POST['role'];
+    $stmt3 = $conn->prepare("INSERT INTO user (name, prename, password, email, role) VALUES (?, ?, ?, ?, ?)");
+    $stmt3->bind_param("sssss", $nome, $prenom, $password, $email, $role);
+    $stmt3->execute();
+    exit();
+}
+
+
+?>
+
+
+    }else
+
+        <?php
+if (isset($_POST['submit'])) {
+    $nome = $_POST['nome'];
+    $prenom = $_POST['prenome'];
+    $email = $_POST['email'];
+    // $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    //   $password = md5($_POST['password']);
+
+    $password = $_POST['password'];
+    $specialty = $_POST['specialty'];
+    $role = $_POST['role'];
+
+    $file = $_FILES['file']['name'];
+    $temp_file = $_FILES['file']['tmp_name'];
+
+    $newfilename = uniqid() . "-" . $file;
+    }else if (move_uploaded_file($temp_file, "../assest/upload/" . $newfilename)) {
+        $stmt = $conn->prepare("INSERT INTO user (name, prename, password, email, role, photo) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $nome, $prenom, $password, $email, $role, $newfilename);
+
+
+
+
+        if ($stmt->execute()) {
+            echo "User  added successfully!";
+            if ($role == 'avocat') {
+                $stmt2 = $conn->prepare("INSERT INTO specialty (id_avocat, specialtyname) VALUES ((SELECT id FROM user WHERE email = ?), ?)");
+                $stmt2->bind_param("ss", $email, $specialty);
+                if ($stmt2->execute()) {
+                    echo "specialty added successfully!";
+                } else {
+                    echo "error adding specialty: " . $stmt2->error;
+                }
+            }
+        } else {
+            echo "error: " . $stmt->error;
+        }
+
+        $stmt->close();
+    } else{
+        echo "error uploading file.";
+    }
+
+?>
+</script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </body>

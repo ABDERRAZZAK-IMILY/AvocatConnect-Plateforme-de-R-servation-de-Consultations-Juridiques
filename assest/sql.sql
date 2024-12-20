@@ -5,8 +5,9 @@ CREATE TABLE user (
   name VARCHAR(255) NOT NULL,
   prename VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
-  photo VARCHAR(255) NOT NULL,
-  role ENUM('client', 'avocat') NOT NULL
+  photo VARCHAR(255),
+  role ENUM('client', 'avocat') NOT NULL,
+  password VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE specialty (
@@ -32,4 +33,18 @@ CREATE TABLE resivation (
   FOREIGN KEY (id_avocat) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (id_client) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
 
+);
+
+
+
+
+CREATE TABLE reservation (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  id_avocat INT NOT NULL,
+  id_client INT NOT NULL,
+  date_reservation DATE NOT NULL,
+  date_available DATE NOT NULL, 
+  FOREIGN KEY (id_avocat) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (id_client) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (date_available) REFERENCES availability(date_available) ON DELETE CASCADE ON UPDATE CASCADE 
 );

@@ -12,21 +12,64 @@ if (isset($_POST["submit_btn"])) {
 
     if (mysqli_num_rows($result) > 0) {
         $user = mysqli_fetch_assoc($result);
-        if (password_verify($password, $user["password"])) {
+        if ($password == $user["password"]) {
 
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["first_name"] = $user["name"];
             $_SESSION["email"] = $user["email"];
             $_SESSION["role"] = $user["role"];
-            header("Location: ../avocat.php");
-            exit();
-        } else {
-            $error = "Invalid email or password!";
+     
+         if ($_SESSION["role"] === "avocat"){
+          header("Location: ../avocat.php");
+          exit();
+         }else if ($_SESSION["role"] === "client"){
+          header("Location: ../client.php");
+
+         }
+
+            
+        else {
+          echo '
+          <script>
+            Swal.fire({
+              title: "INCORRECT",
+              text: "PASSWORD IS INCORRECT",
+              icon: "warning"
+            });
+            </script>
+         
+         ';
         }
     } else {
-        $error = "Invalid email or password!";
-    }
+      echo '
+      <script>
+        Swal.fire({
+          title: "INCORRECT",
+          text: "PASSWORD IS INCORRECT",
+          icon: "warning"
+        });
+        </script>
+     
+     ';    }
+ }else{
+  if (isset($error)) {
+ echo '
+  <script>
+    Swal.fire({
+      title: "INCORRECT",
+      text: "PASSWORD IS INCORRECT",
+      icon: "warning"
+    });
+    </script>
+ 
+ ';
+   
+
+
+
+}
  }
+}
 
 ?>
 
@@ -120,7 +163,6 @@ if (isset($_POST["submit_btn"])) {
     </div>
   </div>
 </section>
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
